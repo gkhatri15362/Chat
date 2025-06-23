@@ -3,154 +3,120 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Chat - AI Bot</title>
+  <title>Chat</title>
   <style>
-    * {
+    body {
       margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body, html {
-      height: 100%;
       font-family: Arial, sans-serif;
-      background-color: #f1f1f1;
-    }
-
-    .chat-container {
+      background-color: #f7f7f7;
       display: flex;
       flex-direction: column;
       height: 100vh;
+    }
+    #chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
       max-width: 600px;
       margin: auto;
+      width: 100%;
       background-color: #fff;
       border-left: 1px solid #ccc;
       border-right: 1px solid #ccc;
     }
-
-    .messages {
+    #messages {
       flex: 1;
-      padding: 15px;
       overflow-y: auto;
+      padding: 15px;
     }
-
     .message {
-      max-width: 80%;
-      margin-bottom: 10px;
-      padding: 12px 15px;
-      border-radius: 18px;
-      line-height: 1.4;
-      white-space: pre-wrap;
+      margin: 10px 0;
+      padding: 10px 15px;
+      border-radius: 12px;
+      max-width: 75%;
       word-wrap: break-word;
     }
-
     .user {
+      background-color: #dbeafe;
       align-self: flex-end;
-      background-color: #cce5ff;
     }
-
     .bot {
+      background-color: #e5e7eb;
       align-self: flex-start;
-      background-color: #e8e8e8;
     }
-
-    .input-area {
+    #input-area {
       display: flex;
       padding: 10px;
       border-top: 1px solid #ccc;
-      background-color: #fafafa;
+      background-color: #fff;
     }
-
-    .input-area input {
+    #input {
       flex: 1;
-      padding: 10px 15px;
-      font-size: 16px;
+      padding: 10px;
       border: 1px solid #ccc;
-      border-radius: 25px;
-      outline: none;
+      border-radius: 8px;
+      font-size: 16px;
     }
-
-    .input-area button {
+    #send {
       margin-left: 10px;
       padding: 10px 20px;
-      background-color: #28a745;
+      font-size: 16px;
+      background-color: #2563eb;
       color: white;
       border: none;
-      border-radius: 25px;
-      font-weight: bold;
+      border-radius: 8px;
       cursor: pointer;
-    }
-
-    .input-area button:hover {
-      background-color: #218838;
     }
   </style>
 </head>
 <body>
-  <div class="chat-container">
-    <div class="messages" id="messages"></div>
-    <div class="input-area">
-      <input type="text" id="input" placeholder="Type your message..." />
-      <button onclick="sendMessage()">Send</button>
+  <div id="chat-container">
+    <div id="messages"></div>
+    <div id="input-area">
+      <input type="text" id="input" placeholder="Type a message..." />
+      <button id="send">Send</button>
     </div>
   </div>
 
   <script>
     const input = document.getElementById('input');
+    const sendBtn = document.getElementById('send');
     const messages = document.getElementById('messages');
 
-    input.addEventListener('keypress', function (e) {
-      if (e.key === 'Enter') sendMessage();
-    });
-
-    function appendMessage(text, sender) {
+    function addMessage(content, sender) {
       const msg = document.createElement('div');
       msg.className = 'message ' + sender;
-      msg.innerText = text;
+      msg.innerText = content;
       messages.appendChild(msg);
       messages.scrollTop = messages.scrollHeight;
     }
 
     async function sendMessage() {
-      const userInput = input.value.trim();
-      if (!userInput) return;
+      const userText = input.value.trim();
+      if (!userText) return;
 
-      appendMessage(userInput, 'user');
+      addMessage(userText, 'user');
+      addMessage('Typing...', 'bot');
       input.value = '';
-      appendMessage("Typing...", 'bot');
 
       try {
-        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Authorization": "Bearer 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",
-            "Content-Type": "application/json",
-            "HTTP-Referer": "https://chat-eight-dusky-80.vercel.app", 
-            "X-Title": "Chat by Huzaifa"
-          },
-          body: JSON.stringify({
-            model: "openai/gpt-4o",
-            messages: [
-              { role: "user", content: userInput }
-            ]
-          })
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: userText })
         });
 
         const data = await res.json();
-        const botBubble = document.querySelectorAll('.bot');
-        
-        if (data.choices && data.choices.length > 0) {
-          botBubble[botBubble.length - 1].innerText = data.choices[0].message.content;
-        } else if (data.error) {
-          botBubble[botBubble.length - 1].innerText = "API Error: " + data.error.message;
-        } else {
-          botBubble[botBubble.length - 1].innerText = "No response from AI.";
-        }
+        const botMsg = document.querySelector('.bot:last-child');
+        botMsg.innerText = data.response || 'No response';
       } catch (err) {
-        const botBubble = document.querySelectorAll('.bot');
-        botBubble[botBubble.length - 1].innerText = "Error: " + err.message;
+        const botMsg = document.querySelector('.bot:last-child');
+        botMsg.innerText = 'API Error: ' + err.message;
       }
     }
+
+    sendBtn.onclick = sendMessage;
+    input.onkeypress = e => { if (e.key === 'Enter') sendMessage(); };
   </script>
 </body>
 </html>
