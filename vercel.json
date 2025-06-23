@@ -1,3 +1,5 @@
 {
-  "model": "openai/gpt-4o" // ❌ Yeh galat hai
+  "rewrites": [
+    { "source": "/api/chat", "destination": "/api/chat.js" }
+  ]
 }
