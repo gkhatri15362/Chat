@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat - AI Bot</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+    }
+    #chatbox {
+      max-width: 500px;
+      margin: auto;
+      margin-top: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    #messages {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .msg {
+      margin: 10px 0;
+      padding: 8px 12px;
+      border-radius: 8px;
+      line-height: 1.4;
+    }
+    .user {
+      background-color: #d0ebff;
+      text-align: right;
+    }
+    .bot {
+      background-color: #d3f9d8;
+      text-align: left;
+    }
+    .input-area {
+      display: flex;
+      margin-top: 10px;
+    }
+    input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    button {
+      margin-left: 8px;
+      padding: 10px 16px;
+      border: none;
+      background-color: #4CAF50;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <div id="chatbox">
+    <h2>💬 Chat - AI Bot</h2>
+    <div id="messages"></div>
+    <div class="input-area">
+      <input type="text" id="input" placeholder="Type a message..." />
+      <button onclick="sendMsg()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    async function sendMsg() {
+      const input = document.getElementById('input');
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      showMessage(msg, 'user');
+      input.value = '';
+
+      showMessage("Typing...", 'bot');
+      const reply = await getAIResponse(msg);
+      document.querySelectorAll('.bot').pop().innerText = reply;
+    }
+
+    function showMessage(text, sender) {
+      const messages = document.getElementById('messages');
+      const div = document.createElement('div');
+      div.className = 'msg ' + sender;
+      div.innerText = text;
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    async function getAIResponse(message) {
+      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer YOUR_API_KEY_HERE',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'mistralai/mixtral-8x7b',
+          messages: [{ role: 'user', content: message }]
+        })
+      });
+      const data = await res.json();
+      return data.choices?.[0]?.message?.content || 'No reply';
+    }
+  </script>
+</body>
+</html>
