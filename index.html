@@ -5,12 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Chat - AI Bot</title>
   <style>
-    body, html {
+    * {
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
+    }
+
+    body, html {
       height: 100%;
-      font-family: 'Segoe UI', sans-serif;
-      background: #f4f4f4;
+      font-family: Arial, sans-serif;
+      background-color: #f1f1f1;
     }
 
     .chat-container {
@@ -19,169 +23,134 @@
       height: 100vh;
       max-width: 600px;
       margin: auto;
-      background: white;
+      background-color: #fff;
       border-left: 1px solid #ccc;
       border-right: 1px solid #ccc;
     }
 
     .messages {
       flex: 1;
+      padding: 15px;
       overflow-y: auto;
-      padding: 10px;
     }
 
     .message {
       max-width: 80%;
-      margin: 10px;
-      padding: 12px 16px;
-      border-radius: 16px;
+      margin-bottom: 10px;
+      padding: 12px 15px;
+      border-radius: 18px;
       line-height: 1.4;
-      word-wrap: break-word;
       white-space: pre-wrap;
-      animation: fadeIn 0.3s ease-in-out;
+      word-wrap: break-word;
     }
 
     .user {
       align-self: flex-end;
-      background-color: #d1e7ff;
+      background-color: #cce5ff;
     }
 
     .bot {
       align-self: flex-start;
-      background-color: #eee;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(5px); }
-      to { opacity: 1; transform: translateY(0); }
+      background-color: #e8e8e8;
     }
 
     .input-area {
       display: flex;
       padding: 10px;
       border-top: 1px solid #ccc;
-      background: #fafafa;
+      background-color: #fafafa;
     }
 
     .input-area input {
       flex: 1;
-      padding: 12px;
-      border: 1px solid #ccc;
-      border-radius: 24px;
+      padding: 10px 15px;
       font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 25px;
       outline: none;
     }
 
     .input-area button {
-      margin-left: 8px;
-      padding: 12px 16px;
-      background-color: #4CAF50;
+      margin-left: 10px;
+      padding: 10px 20px;
+      background-color: #28a745;
       color: white;
       border: none;
-      border-radius: 24px;
+      border-radius: 25px;
       font-weight: bold;
       cursor: pointer;
     }
 
-    .mic-button {
-      margin-left: 8px;
-      background: #007bff;
-    }
-
-    @media (max-width: 600px) {
-      .chat-container {
-        border: none;
-      }
+    .input-area button:hover {
+      background-color: #218838;
     }
   </style>
 </head>
 <body>
-
-<div class="chat-container">
-  <div class="messages" id="messages"></div>
-  <div class="input-area">
-    <input type="text" id="input" placeholder="Type or speak..." />
-    <button onclick="startVoice()" class="mic-button">🎤</button>
-    <button onclick="sendMessage()">Send</button>
+  <div class="chat-container">
+    <div class="messages" id="messages"></div>
+    <div class="input-area">
+      <input type="text" id="input" placeholder="Type your message..." />
+      <button onclick="sendMessage()">Send</button>
+    </div>
   </div>
-</div>
 
-<script>
-  const input = document.getElementById('input');
-  const messages = document.getElementById('messages');
+  <script>
+    const input = document.getElementById('input');
+    const messages = document.getElementById('messages');
 
-  input.addEventListener("keypress", function (e) {
-    if (e.key === "Enter") sendMessage();
-  });
+    input.addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') sendMessage();
+    });
 
-  function appendMessage(text, sender) {
-    const msg = document.createElement('div');
-    msg.className = 'message ' + sender;
-    msg.innerText = text;
-    messages.appendChild(msg);
-    messages.scrollTop = messages.scrollHeight;
-  }
-
-  async function sendMessage() {
-    const text = input.value.trim();
-    if (!text) return;
-
-    appendMessage(text, 'user');
-    input.value = '';
-    appendMessage("Typing...", 'bot');
-
-    try {
-      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": "Bearer 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",
-          "Content-Type": "application/json",
-          "HTTP-Referer": "https://chat-eight-dusky-80.vercel.app",
-          "X-Title": "Chat by Huzaifa"
-        },
-        body: JSON.stringify({
-          model: "openai/gpt-4o",
-          messages: [{ role: "user", content: text }]
-        })
-      });
-
-      const data = await res.json();
-
-      const botMsg = data?.choices?.[0]?.message?.content;
-      const botBubble = document.querySelectorAll('.bot');
-      botBubble[botBubble.length - 1].innerText = botMsg || "No response from AI.";
-
-    } catch (e) {
-      const botBubble = document.querySelectorAll('.bot');
-      botBubble[botBubble.length - 1].innerText = "Error: " + e.message;
-    }
-  }
-
-  // 🎤 Voice input
-  function startVoice() {
-    if (!('webkitSpeechRecognition' in window)) {
-      alert("Voice not supported in this browser.");
-      return;
+    function appendMessage(text, sender) {
+      const msg = document.createElement('div');
+      msg.className = 'message ' + sender;
+      msg.innerText = text;
+      messages.appendChild(msg);
+      messages.scrollTop = messages.scrollHeight;
     }
 
-    const recognition = new webkitSpeechRecognition();
-    recognition.lang = 'en-US';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
+    async function sendMessage() {
+      const userInput = input.value.trim();
+      if (!userInput) return;
 
-    recognition.onresult = function (event) {
-      const transcript = event.results[0][0].transcript;
-      input.value = transcript;
-      sendMessage();
-    };
+      appendMessage(userInput, 'user');
+      input.value = '';
+      appendMessage("Typing...", 'bot');
 
-    recognition.onerror = function (event) {
-      alert('Voice error: ' + event.error);
-    };
+      try {
+        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer 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",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://chat-eight-dusky-80.vercel.app", 
+            "X-Title": "Chat by Huzaifa"
+          },
+          body: JSON.stringify({
+            model: "openai/gpt-4o",
+            messages: [
+              { role: "user", content: userInput }
+            ]
+          })
+        });
 
-    recognition.start();
-  }
-</script>
-
+        const data = await res.json();
+        const botBubble = document.querySelectorAll('.bot');
+        
+        if (data.choices && data.choices.length > 0) {
+          botBubble[botBubble.length - 1].innerText = data.choices[0].message.content;
+        } else if (data.error) {
+          botBubble[botBubble.length - 1].innerText = "API Error: " + data.error.message;
+        } else {
+          botBubble[botBubble.length - 1].innerText = "No response from AI.";
+        }
+      } catch (err) {
+        const botBubble = document.querySelectorAll('.bot');
+        botBubble[botBubble.length - 1].innerText = "Error: " + err.message;
+      }
+    }
+  </script>
 </body>
 </html>
