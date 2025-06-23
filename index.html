@@ -135,20 +135,25 @@
         method: "POST",
         headers: {
           "Authorization": "Bearer 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",
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://chat-eight-dusky-80.vercel.app",
+          "X-Title": "Chat by Huzaifa"
         },
         body: JSON.stringify({
-          model: "openai/gpt-3.5-turbo",
+          model: "openai/gpt-4o",
           messages: [{ role: "user", content: text }]
         })
       });
 
       const data = await res.json();
-      const reply = data.choices?.[0]?.message?.content || "No response";
-      document.querySelectorAll('.bot')[document.querySelectorAll('.bot').length - 1].innerText = reply;
+
+      const botMsg = data?.choices?.[0]?.message?.content;
+      const botBubble = document.querySelectorAll('.bot');
+      botBubble[botBubble.length - 1].innerText = botMsg || "No response from AI.";
 
     } catch (e) {
-      document.querySelectorAll('.bot')[document.querySelectorAll('.bot').length - 1].innerText = "Error: " + e.message;
+      const botBubble = document.querySelectorAll('.bot');
+      botBubble[botBubble.length - 1].innerText = "Error: " + e.message;
     }
   }
 
