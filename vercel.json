@@ -1,8 +1,6 @@
 {
-  "rewrites": [
-    {
-      "source": "/api/chat",
-      "destination": "/api/chat.js"
-    }
+  "model": "openai/gpt-4o",
+  "messages": [
+    { "role": "user", "content": "Hello!" }
   ]
 }
