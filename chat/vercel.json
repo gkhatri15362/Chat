@@ -1,6 +1,0 @@
-// chat/vercel.json
-{
-  "rewrites": [
-    { "source": "/", "destination": "/public/index.html" }
-  ]
-}
